@@ -51,8 +51,8 @@ void find_disjoint_cliques(int n,int m, int k1, int k2,vector<vector<int> > &edg
         clauses.push_back(clause);
     }
     // State : S[i,k] = S[i-1,k] | (S[i-1,k-1] & X[i])
-    // Map : S[i,k] = K*i + k
-    // Domain :  0 <= i <= n, 0 <= k <= K
+    // Map : S[i,k] = K1*i + k
+    // Domain :  0 <= i <= n, 0 <= k <= K1
     int offset=2*n+1;
     generate_clause_with_offset(clauses,n,k1,offset);
     offset += (n+1)*(k1+1);
