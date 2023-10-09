@@ -8,16 +8,28 @@ string generate_edge_clause(int i,int j){
     return clause;
 };
 
-string generate_clause(int i,int k,int K,int offset){
+void generate_clause(int i,int k,int K,int offset,vector<string>& clauses){
     if (k == 0){
-        return to_string(offset+k+(i)*K)+" 0\n";
+        auto clause = to_string(offset+k+(i)*K)+" 0\n";
+        clauses.push_back(clause);
+        return;
     }
     if (i == 0){
-        return "-"+to_string(offset+k+(i)*K) + " 0\n";
+        auto clause = "-"+to_string(offset+k+(i)*K) + " 0\n";
+        clauses.push_back(clause);
+        return;
     }
-    string clause1 = to_string(i)+" "+to_string(offset+k+(i-1)*K)+" 0\n";
-    string clause2 = to_string(offset+k-1+(i-1)*K)+" "+to_string(offset+k+(i-1)*K)+" 0\n";
-    return clause1+ clause2;
+    // string clause1 = to_string(i)+" "+to_string(offset+k+(i-1)*K)+" 0\n";
+    // string clause2 = to_string(offset+k-1+(i-1)*K)+" "+to_string(offset+k+(i-1)*K)+" 0\n";
+    string clause1 ="-"+to_string(offset+k+(i)*K)+" "+to_string(offset+k+(i-1)*K)+" "+to_string(i)+" 0\n";
+    string clause2 ="-"+to_string(offset+k+(i)*K)+" "+to_string(offset+k+(i-1)*K)+" "+to_string(offset+k-1+(i-1)*K)+" 0\n";
+    string clause3 ="-"+to_string(offset+k+(i-1)*K)+" "+to_string(offset+k+(i)*K)+" 0\n";
+    string clause4 ="-"+to_string(offset+k+(i-1)*K)+" "+to_string(offset+k+(i)*K)+" -"+to_string(i)+" 0\n";
+    clauses.push_back(clause1);
+    clauses.push_back(clause2);
+    clauses.push_back(clause3);
+    clauses.push_back(clause4);
+    return;
 }
 
 void generate_clauses_for_not_connected_vertices(vector<string> &clauses,vector<vector<int> > &edges){
@@ -30,7 +42,8 @@ void generate_clauses_for_not_connected_vertices(vector<string> &clauses,vector<
         for(int j=i+1;j<=n;j++){
             if (is_present[j]){continue;}
             string clause = generate_edge_clause(i,j);
-            cout<<clause;
+            clauses.push_back(clause);
+            clause = generate_edge_clause(i+n,j+n);
             clauses.push_back(clause);
         }
     }
@@ -39,8 +52,7 @@ void generate_clauses_for_not_connected_vertices(vector<string> &clauses,vector<
 void generate_clause_with_offset(vector<string> &clauses, int n,int k1,int offset){
     for(int i = 0;i <= n;i++){
         for(int k = 0;k<=k1;k++){
-            string clause = generate_clause(i,k,k1+1,offset);
-            clauses.push_back(clause);
+            generate_clause(i,k,k1+1,offset,clauses);
         }
     }
 }
