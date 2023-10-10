@@ -32,6 +32,15 @@ void generate_disjoint_clause(int i, int j, int k, int n, int offset, vector<str
     }
 }
 
+void generate_degree_clause(int n, int offset, int k, vector<vector<int>>& edges, vector<string>& clauses){
+    for (int i = 1; i<=n; i++){
+        if (edges[i].size() < k-1){
+            auto clause = "-"+to_string(offset+i)+" 0";
+            clauses.push_back(clause);
+        }
+    }
+}
+
 void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector<vector<int> >& edges,bool two_clause=true){  // Generates clauses to ensure clique is subgraph
     int n = edges.size() - 1;
     for(int i=1; i<=n; i++){
@@ -59,7 +68,7 @@ void generate_clause_with_offset(vector<string>& clauses, int n, int k, int offs
     clauses.push_back(to_string(offset+(k-1)+n*k)+" 0");
 }
 
-void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int> >& edges, vector<string>& clauses){  // Generates all remaining clauses for part 1
+void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int>>& edges, vector<string>& clauses){  // Generates all remaining clauses for part 1
     // Generating Clauses to ensure labels for clique 1 do not interfere with labels for clique 2
     for (int i=1; i<=n; i++){
         string clause = generate_edge_clause(i,i+n);
@@ -77,8 +86,9 @@ void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int> >& e
     return;
 };
 
-bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, vector<string> &clauses,const string clause_file_address,const string minisat_file_name,const string output_file_address){  // Generates all remaining clauses for part 1
+bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int>>& edges, vector<string> &clauses,const string clause_file_address,const string minisat_file_name,const string output_file_address){  // Generates all remaining clauses for part 1
     int offset=n+1;
+    generate_degree_clause(n, 0, k1, edges, clauses);
     generate_clause_with_offset(clauses, n, k1+1, offset, true);
 
     ofstream ClauseFile(clause_file_address);
@@ -128,6 +138,8 @@ void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string
     int low =0, high=n;
     string assignment;
     bool satisfiable = false;
+    ofstream Minisatlog("temp/minisat_log.txt");
+    Minisatlog.close();
     while (low < high){
         vector<string> newClause (clauses.begin(), clauses.end());
         int k = ((low+high)/2);
@@ -159,6 +171,8 @@ void disjoint_clique(const string input_file_address,const string clause_file_ad
     // Create and Insert Clauses
     vector<string> clauses;
     generate_clauses_for_not_connected_vertices(clauses, edges);
+    generate_degree_clause(n, 0, k1, edges, clauses);
+    generate_degree_clause(n, n, k2, edges, clauses);
     find_disjoint_cliques(n, m, k1, k2, edges, clauses);
 
     ofstream ClauseFile(clause_file_address);

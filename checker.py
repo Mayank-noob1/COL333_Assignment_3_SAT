@@ -10,28 +10,37 @@ def is_complete_subgraph(graph, subgraph):
 
 
 
-# Function to find all complete subgraphs in a graph
-def find_complete_subgraphs(graph):
-    complete_subgraphs = []
-    for subgraph in nx.enumerate_all_cliques(graph):
-        if is_complete_subgraph(graph, graph.subgraph(subgraph)):
-            complete_subgraphs.append(subgraph)
-    return complete_subgraphs
-
-# Function to check if a subgraph is the largest complete subgraph
-def is_largest_complete_subgraph(graph, subgraph):
-    g1 = nx.Graph(graph)
-    all_complete_subgraphs = find_complete_subgraphs(g1)
+def find_largest_complete_subgraph(graph):
+    largest_complete_subgraph = set()
     largest_size = -1
-    largest_index = -1
-    for index, sub in enumerate(all_complete_subgraphs):
-        size = len(sub)
-        if size > largest_size:
-            largest_size = size
-            largest_index = index
-    
-    return sorted(subgraph) == sorted(all_complete_subgraphs[largest_index])
+    graph = nx.Graph(graph)
+    all_largest_subgraphs=[]
+    for subgraph in nx.find_cliques(graph):       
+        is_complete = True
+        for u in subgraph:
+            for v in subgraph:
+                if u != v and not graph.has_edge(u, v):
+                    is_complete = False
+                    break
+        
+        if is_complete:
+            if len(subgraph) >= largest_size:
+                largest_size = len(subgraph)
+                largest_complete_subgraph = set(subgraph)
+                all_largest_subgraphs.append(largest_complete_subgraph)
 
+    if len(all_largest_subgraphs)>1:
+        if len(all_largest_subgraphs[0])<len(all_largest_subgraphs[1]):
+            return all_largest_subgraphs[1:]
+        else: 
+            return all_largest_subgraphs
+    else: 
+    	return all_largest_subgraphs
+
+
+def is_largest_complete_subgraph(graph, subgraph):
+    largest_complete_subgraph = find_largest_complete_subgraph(graph)
+    return set(sorted(subgraph)) in largest_complete_subgraph
 
 
 def checker_problem2(graph_file, outfile):	
