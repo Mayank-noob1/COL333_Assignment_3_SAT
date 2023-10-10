@@ -1,11 +1,12 @@
 import sys
 from random import randint
-if(len(sys.argv)<4):
+if(len(sys.argv)<5):
     print("ERROR: Too few Arguments")
     sys.exit(1)
 N = int(sys.argv[1])
 K1 = int(sys.argv[2])
 K2 = int(sys.argv[3])
+output_filename = sys.argv[4]
 E = randint(N-1,N*(N-1)/2)
 G = {}
 G[1] = []
@@ -22,7 +23,7 @@ while num_edges < E:
     else:
         G[v1].append(v2)
         num_edges += 1
-fp = open('test.graph','w')
+fp = open(output_filename,'w')
 fp.write('%d %d %d %d\n' %(N,E, K1, K2))
 for i in range(1,N+1):
     for v in G[i]:

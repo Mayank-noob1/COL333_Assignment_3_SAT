@@ -115,13 +115,6 @@ int main(int argc, char* argv[]){
     }
     InputFile.close();
 
-    // Print Graph
-    for(int i=0; i<edges.size(); i++){
-        cout << i << "-> ";
-        for(int j=0; j<edges[i].size(); j++) cout << edges[i][j] << ' ';
-        cout<<'\n';
-    }
-
     // Create and Insert Clauses
     vector<string> clauses;
     generate_clauses_for_not_connected_vertices(clauses, edges);
