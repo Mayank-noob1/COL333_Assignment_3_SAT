@@ -32,7 +32,7 @@ void generate_disjoint_clause(int i, int j, int k, int n, int offset, vector<str
     }
 }
 
-void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector<vector<int> >& edges){  // Generates clauses to ensure clique is subgraph
+void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector<vector<int> >& edges,bool two_clause=true){  // Generates clauses to ensure clique is subgraph
     int n = edges.size() - 1;
     for(int i=1; i<=n; i++){
         vector<bool> is_present(n+1, false);
@@ -42,9 +42,10 @@ void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector
         for(int j=i+1; j<=n; j++){
             if (is_present[j]) continue;
             string clause1 = generate_edge_clause(i,j);
-            string clause2 = generate_edge_clause(i+n, j+n);
             clauses.push_back(clause1);
-            clauses.push_back(clause2);
+            if (two_clause){
+            string clause2 = generate_edge_clause(i+n, j+n);
+            clauses.push_back(clause2);}
         }
     }
 };
@@ -76,24 +77,61 @@ void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int> >& e
     return;
 };
 
-void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string>& clauses){
+bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, vector<string> &clauses,const string clause_file_address,const string minisat_file_name,const string output_file_address){  // Generates all remaining clauses for part 1
+    int offset=n+1;
+    generate_clause_with_offset(clauses, n, k1+1, offset, true);
+
+    ofstream ClauseFile(clause_file_address);
+    ClauseFile << "p cnf " << (n + (n+1)*(k1+1)) << ' ' << clauses.size() << '\n';
+    for (auto &clause: clauses) ClauseFile << clause << '\n';
+    ClauseFile.close();
+
+    string command = "minisat "+clause_file_address+' '+minisat_file_name + " >> temp/minisat_log.txt";
+    system(command.c_str());
+
+
+    ifstream MiniSatFile(minisat_file_name);
+    ofstream OutputFile(output_file_address);
+    string satisfy;
+    MiniSatFile >> satisfy;
+    if (satisfy == "SAT"){
+        OutputFile << "#1\n";
+        for (int i=1; i<=n; i++){
+            int x;
+            MiniSatFile >> x;
+            if (x > 0) OutputFile << i << ' ';
+        }
+        OutputFile << '\n';
+        MiniSatFile.close();
+        OutputFile.close();
+        return true;
+    }
+    else{
+        MiniSatFile.close();
+        OutputFile.close();
+        return false;
+    }
+};
+
+void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string>& clauses,const string clause_file_address,const string minsat_file_name,const string output_file_address){
     // Binary search on k
     int low =0,high=n;
     string assignment;
     bool satisfiable=false;
     while (low < high){
-        int mid = (low+high/2)>>1;
-        if (satisfiable){
-            // Store the assignment
-            high = mid;
+        vector<string> newClause (clauses.begin(),clauses.end());
+        int k = ((low+high)/2);
+        satisfiable = find_fixed_size_cliques(n,m,k,edges,newClause,clause_file_address,minsat_file_name,output_file_address);
+        if (!satisfiable){
+            high = k;
         }else{
-            low = mid+1;
+            low = k+1;
         }
     }
     return;
 };
 
-void disjoint_clique(string input_file_address, string clause_file_address){    // Main function for part1
+void disjoint_clique(const string input_file_address,const string clause_file_address){    // Main function for part1
     ifstream InputFile(input_file_address);
     int n, m, k1, k2;
     InputFile >> n >> m >> k1 >> k2;
@@ -119,7 +157,7 @@ void disjoint_clique(string input_file_address, string clause_file_address){    
     ClauseFile.close();
 }
 
-void maximal_clique(string input_file_address, string output_file_address, string clause_file_address, string minsat_output_file_address){  // Main function for part2
+void maximal_clique(const string input_file_address,const string output_file_address,const string clause_file_address,const string minsat_output_file_address){  // Main function for part2
     ifstream InputFile(input_file_address);
     int n, m;
     InputFile >> n >> m;
@@ -139,9 +177,14 @@ void maximal_clique(string input_file_address, string output_file_address, strin
     Run minsat and get the values in minsat_output_file_address
     Change the format of minsat_output_file_address and store it in output_file_address
     */
+
+    vector<string> clauses;
+    generate_clauses_for_not_connected_vertices(clauses, edges,false);
+    find_maximal_clique(n, m, edges, clauses,clause_file_address,minsat_output_file_address,output_file_address);
+
 }
 
-void format_changer_p1(int n, string input_file_address, string output_file_address){  // Changes format of output for part1
+void format_changer_p1(int n,const string input_file_address,const string output_file_address){  // Changes format of output for part1
         ifstream MiniSatFile(input_file_address);
         ofstream OutputFile(output_file_address);
         string satisfy;
@@ -189,6 +232,7 @@ int main(int argc, char* argv[]){
         string output_file_address = argv[3];
         string clause_file_address = "temp/clause.txt";
         string minsat_output_file_address = "temp/minsat_output.txt";
+        maximal_clique(input_file_address,output_file_address,clause_file_address,minsat_output_file_address);
     }
     else cout << "Invalid Mode";
 }
