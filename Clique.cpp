@@ -8,26 +8,27 @@ string generate_edge_clause(int i,int j){
     return "-"+to_string(i)+" "+"-"+to_string(j)+" 0";
 }
 
-void generate_clause(int i, int j, int k, int offset, vector<string>& clauses){
-    if (k == 0){
-        auto clause = to_string(offset+j+(i)*k)+" 0\n";
+void generate_disjoint_clause(int i, int j, int k, int n, int offset, vector<string>& clauses, bool first_clique){ // Generates clauses to ensure disjoint Cliques
+    if (j == 0){
+        auto clause = to_string(offset+j+(i)*k)+" 0";
         clauses.push_back(clause);
         return;
     }
     if (i == 0){
-        auto clause = "-"+to_string(offset+j+(i)*k) + " 0\n";
+        auto clause = "-"+to_string(offset+j+(i)*k) + " 0";
         clauses.push_back(clause);
         return;
     }
-    string clause1 ="-"+to_string(offset+j+(i)*k)+" "+to_string(offset+j+(i-1)*k)+" "+to_string(i)+" 0\n";
-    string clause2 ="-"+to_string(offset+j+(i)*k)+" "+to_string(offset+j+(i-1)*k)+" "+to_string(offset+j-1+(i-1)*k)+" 0\n";
-    string clause3 ="-"+to_string(offset+j+(i-1)*k)+" "+to_string(offset+j+(i)*k)+" 0\n";
-    string clause4 ="-"+to_string(offset+j+(i-1)*k)+" "+to_string(offset+j+(i)*k)+" -"+to_string(i)+" 0\n";
-    clauses.push_back(clause1);
-    clauses.push_back(clause2);
-    clauses.push_back(clause3);
-    clauses.push_back(clause4);
-    return;
+    clauses.push_back("-"+to_string(offset+j+(i)*k)+" "+to_string(offset+j+(i-1)*k)+" "+to_string(offset+(j-1)+(i-1)*k)+" 0");
+    clauses.push_back("-"+to_string(offset+j+(i-1)*k)+" "+to_string(offset+j+(i)*k)+" 0");
+    if (first_clique){
+        clauses.push_back("-"+to_string(offset+j+(i)*k)+" "+to_string(offset+j+(i-1)*k)+" "+to_string(i)+" 0");
+        clauses.push_back("-"+to_string(offset+(j-1)+(i-1)*k)+" "+to_string(offset+j+(i)*k)+" -"+to_string(i)+" 0");
+    }
+    else{
+        clauses.push_back("-"+to_string(offset+j+(i)*k)+" "+to_string(offset+j+(i-1)*k)+" "+to_string(i+n)+" 0");
+        clauses.push_back("-"+to_string(offset+(j-1)+(i-1)*k)+" "+to_string(offset+j+(i)*k)+" -"+to_string(i+n)+" 0");
+    }
 }
 
 void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector<vector<int>>& edges){  // Generates clauses to ensure clique is subgraph
@@ -47,12 +48,13 @@ void generate_clauses_for_not_connected_vertices(vector<string>& clauses, vector
     }
 };
 
-void generate_clause_with_offset(vector<string> &clauses, int n, int k1, int offset){
+void generate_clause_with_offset(vector<string>& clauses, int n, int k, int offset, bool first_clique){ // Generates clauses to ensure disjoint Cliques
     for(int i=0; i<=n; i++){
-        for(int j=0; j<=k1; j++){
-            generate_clause(i, j, k1+1, offset, clauses);
+        for(int j=0; j<k; j++){
+            generate_disjoint_clause(i, j, k, n, offset, clauses, first_clique);
         }
     }
+    clauses.push_back(to_string(offset+(k-1)+n*k)+" 0");
 }
 
 void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int>>& edges, vector<string>& clauses){  // Generates all remaining clauses for part 1
@@ -67,9 +69,9 @@ void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int>>& ed
     // Map : S[i,k] = K1*i + k
     // Domain :  0 <= i <= n, 0 <= k <= K1
     int offset=2*n+1;
-    generate_clause_with_offset(clauses, n, k1, offset);
+    generate_clause_with_offset(clauses, n, k1+1, offset, true);
     offset += (n+1)*(k1+1);
-    generate_clause_with_offset(clauses, n, k2, offset);
+    generate_clause_with_offset(clauses, n, k2+1, offset, false);
     return;
 };
 
@@ -90,22 +92,28 @@ void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string
     return;
 };
 
-int main(){
+int main(int argc, char* argv[]){
     ios::sync_with_stdio(0);
     cin.tie(0);
 
+    int findMaximal = stoi(argv[1]);
+    string input_file_address = argv[2];
+    string clause_file_name = argv[3];
+
     // Need to think how to take input
+    ifstream InputFile(input_file_address);
     int n, m, k1 = 0, k2 = 0;
-    cin >> n >> m >> k1 >> k2;
+    InputFile >> n >> m >> k1 >> k2;
 
     // Input Graph Edges
     vector<vector<int>> edges (n+1,vector<int> (0));
     for(int i=0; i<m; i++){
         int x, y;
-        cin >> x >> y;
+        InputFile >> x >> y;
         edges[x].push_back(y);
         edges[y].push_back(x);
     }
+    InputFile.close();
 
     // Print Graph
     for(int i=0; i<edges.size(); i++){
@@ -117,12 +125,12 @@ int main(){
     // Create and Insert Clauses
     vector<string> clauses;
     generate_clauses_for_not_connected_vertices(clauses, edges);
-    bool findMaximal = false;
     if (findMaximal) find_maximal_clique(n, m, edges, clauses);
     else find_disjoint_cliques(n, m, k1, k2, edges, clauses);
 
-    ofstream ClauseFile("Clauses.txt");
+    ofstream ClauseFile(clause_file_name);
     ClauseFile << "p cnf " << (2*n + (n+1)*(k1+1) + (n+1)*(k2+1)) << ' ' << clauses.size() << '\n';
     for (auto &clause: clauses) ClauseFile << clause << '\n';
+    ClauseFile.close();
     return 0;
 }
