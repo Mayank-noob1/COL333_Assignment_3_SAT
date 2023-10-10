@@ -173,18 +173,18 @@ int main(int argc, char* argv[]){
     cin.tie(0);
 
     int mode = stoi(argv[1]);
-    if (mode == 0){
+    if (mode == 0){     // run1.sh
         string input_file_address = argv[2];
         string clause_file_address = argv[3];
         disjoint_clique(input_file_address, clause_file_address);
     }
-    else if (mode == 1){
+    else if (mode == 1){        // run2.sh
         string input_file_address = argv[2];
         string output_file_address = argv[3];
         int n = stoi(argv[4]);
         format_changer_p1(n, input_file_address, output_file_address);
     }
-    else if (mode == 2){
+    else if (mode == 2){        // run3.sh
         string input_file_address = argv[2];
         string output_file_address = argv[3];
         string clause_file_address = "temp/clause.txt";

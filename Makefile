@@ -1,12 +1,11 @@
 num = 1
-n = 7
 
-run1: Clique.cpp
-	g++ -o bin/main.exe Clique.cpp
-	bin/main.exe 0 input/input$(num).txt clause/clause$(num).txt
-	- minisat clause/clause$(num).txt sat_output/sat_output$(num).txt
-	bin/main.exe 1 sat_output/sat_output$(num).txt output1/output$(num).txt $(n)
+part1: 
+	./compile.sh
+	./run1.sh data/input$(num)
+	- minisat data/input$(num).satinput data/input$(num).satoutput >> satlog/input$(num).satlog
+	./run2.sh data/input$(num)
 
-run2: Clique.cpp
-	g++ -o bin/main.exe Clique.cpp
-	bin/main.exe 2 input/input$(num).txt output2/output$(num).txt
+part2:
+	./compile.sh
+	./run3.sh data/input$(num)
