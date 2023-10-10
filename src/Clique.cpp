@@ -94,10 +94,10 @@ bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, 
 
 
     ifstream MiniSatFile(minisat_file_name);
-    ofstream OutputFile(output_file_address);
     string satisfy;
     MiniSatFile >> satisfy;
     if (satisfy == "SAT"){
+        ofstream OutputFile(output_file_address);
         OutputFile << "#1\n";
         int ct = 0;
         for (int i=1; i<=n; i++){
@@ -115,14 +115,16 @@ bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, 
     }
     else{
         MiniSatFile.close();
-        OutputFile << "0";
-        OutputFile.close();
         return false;
     }
 };
 
 void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string>& clauses,const string clause_file_address,const string minsat_file_name,const string output_file_address){
     // Binary search on k
+    ofstream OutputFile(output_file_address);
+    OutputFile << "#1\n";
+    OutputFile << "1";
+    OutputFile.close();
     int low =0, high=n;
     string assignment;
     bool satisfiable = false;
