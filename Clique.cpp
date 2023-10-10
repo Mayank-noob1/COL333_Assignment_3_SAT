@@ -76,8 +76,6 @@ void find_disjoint_cliques(int n, int m, int k1, int k2, vector<vector<int> >& e
     return;
 };
 
-
-
 void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string>& clauses){
     // Binary search on k
     int low =0,high=n;
@@ -95,19 +93,7 @@ void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string
     return;
 };
 
-int main(int argc, char* argv[]){
-    ios::sync_with_stdio(0);
-    cin.tie(0);
-    if (argc != 5){
-        cout<<"Input format not correct\n";
-        return 0;
-    }
-    int findMaximal = stoi(argv[1]);
-    string input_file_address = argv[2];
-    string clause_file_name = argv[3];
-    string minisat_file_name = argv[4];
-
-    // Need to think how to take input
+void disjoint_clique(string input_file_address, string clause_file_address){    // Main function for part1
     ifstream InputFile(input_file_address);
     int n, m, k1 = 0, k2 = 0;
     InputFile >> n >> m >> k1 >> k2;
@@ -125,40 +111,59 @@ int main(int argc, char* argv[]){
     // Create and Insert Clauses
     vector<string> clauses;
     generate_clauses_for_not_connected_vertices(clauses, edges);
-    if (findMaximal) find_maximal_clique(n, m, edges, clauses);
-    else find_disjoint_cliques(n, m, k1, k2, edges, clauses);
+    find_disjoint_cliques(n, m, k1, k2, edges, clauses);
 
-    ofstream ClauseFile(clause_file_name);
+    ofstream ClauseFile(clause_file_address);
     ClauseFile << "p cnf " << (2*n + (n+1)*(k1+1) + (n+1)*(k2+1)) << ' ' << clauses.size() << '\n';
     for (auto &clause: clauses) ClauseFile << clause << '\n';
     ClauseFile.close();
+}
 
-    string command = "minisat "+clause_file_name+' '+minisat_file_name + " >> minisat_log.txt";
-    system(command.c_str());
+void format_changer_p1(int n, string input_file_address, string output_file_address){  // Changes format of output for part1
+        ifstream MiniSatFile(input_file_address);
+        ofstream OutputFile(output_file_address);
+        string satisfy;
+        MiniSatFile >> satisfy;
+        if (satisfy == "SAT"){
+            OutputFile << "#1\n";
+            for (int i=1; i<=n; i++){
+                int x;
+                MiniSatFile >> x;
+                if (x > 0) OutputFile << i << ' ';
+            }
+            OutputFile << "\n#2\n"; 
+            for (int i=1; i<=n; i++){
+                int x;
+                MiniSatFile >> x;
+                if (x > 0) OutputFile << i << ' ';
+            }
+            OutputFile << '\n';
+        }
+        else{
+            OutputFile << "0\n";
+        }
+        MiniSatFile.close();
+        OutputFile.close();
+}
 
-    // File format changer.
-    ifstream MiniSatFile(minisat_file_name);
-    string satisfy;
-    MiniSatFile>>satisfy;
-    if (satisfy == "SAT"){
-        cout<<"#1\n";
-        for (int i=1;i<=n;i++){
-            int x;MiniSatFile>>x;
-            if (x > 0){
-                cout<<i<<' ';
-            }
-        }
-        cout<<"\n#2\n"; 
-        for (int i=1;i<=n;i++){
-            int x;MiniSatFile>>x;
-            if (x > 0){
-                cout<<i<<' ';
-            }
-        }
-        cout<<'\n';
+int main(int argc, char* argv[]){
+    ios::sync_with_stdio(0);
+    cin.tie(0);
+
+    int mode = stoi(argv[1]);
+    if (mode == 0){
+        string input_file_address = argv[2];
+        string clause_file_address = argv[3];
+        disjoint_clique(input_file_address, clause_file_address);
     }
-    else{
-        cout<<"0\n";
+    else if (mode == 1){
+        string input_file_address = argv[2];
+        string output_file_address = argv[3];
+        int n = stoi(argv[4]);
+        format_changer_p1(n, input_file_address, output_file_address);
     }
-    return 0;
+    else if (mode == 2){
+        ;
+    }
+    else cout << "Invalid Mode";
 }
