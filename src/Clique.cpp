@@ -83,7 +83,10 @@ bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, 
 
     ofstream ClauseFile(clause_file_address);
     ClauseFile << "p cnf " << (n + (n+1)*(k1+1)) << ' ' << clauses.size() << '\n';
-    for (auto &clause: clauses) ClauseFile << clause << '\n';
+    for (int i = 0; i<clauses.size(); i++){
+        ClauseFile << clauses[i];
+        if (i != clauses.size()-1) ClauseFile << '\n';
+    }
     ClauseFile.close();
 
     string command = "minisat "+clause_file_address+' '+minisat_file_name + " >> temp/minisat_log.txt";
@@ -96,18 +99,23 @@ bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, 
     MiniSatFile >> satisfy;
     if (satisfy == "SAT"){
         OutputFile << "#1\n";
+        int ct = 0;
         for (int i=1; i<=n; i++){
             int x;
             MiniSatFile >> x;
-            if (x > 0) OutputFile << i << ' ';
+            if (x > 0){
+                OutputFile << i;
+                if (ct!=k1-1) OutputFile << ' ';
+                ct++;
+            }
         }
-        OutputFile << '\n';
         MiniSatFile.close();
         OutputFile.close();
         return true;
     }
     else{
         MiniSatFile.close();
+        OutputFile << "0";
         OutputFile.close();
         return false;
     }
@@ -153,7 +161,10 @@ void disjoint_clique(const string input_file_address,const string clause_file_ad
 
     ofstream ClauseFile(clause_file_address);
     ClauseFile << "p cnf " << (2*n + (n+1)*(k1+1) + (n+1)*(k2+1)) << ' ' << clauses.size() << '\n';
-    for (auto &clause: clauses) ClauseFile << clause << '\n';
+    for (int i = 0; i<clauses.size(); i++){
+        ClauseFile << clauses[i];
+        if (i != clauses.size()-1) ClauseFile << '\n';
+    }
     ClauseFile.close();
 }
 
@@ -183,28 +194,37 @@ void maximal_clique(const string input_file_address,const string output_file_add
     find_maximal_clique(n, m, edges, clauses, clause_file_address, minsat_output_file_address, output_file_address);
 }
 
-void format_changer_p1(int n,const string input_file_address,const string output_file_address){  // Changes format of output for part1
+void format_changer_p1(int n, int k1, int k2, const string input_file_address,const string output_file_address){  // Changes format of output for part1
         ifstream MiniSatFile(input_file_address);
         ofstream OutputFile(output_file_address);
         string satisfy;
         MiniSatFile >> satisfy;
         if (satisfy == "SAT"){
             OutputFile << "#1\n";
+            int ct = 0;
             for (int i=1; i<=n; i++){
                 int x;
                 MiniSatFile >> x;
-                if (x > 0) OutputFile << i << ' ';
+                if (x > 0){
+                    OutputFile << i;
+                    if (ct!=k1-1) OutputFile << " ";
+                    ct++;
+                }
             }
             OutputFile << "\n#2\n"; 
+            ct = 0;
             for (int i=1; i<=n; i++){
                 int x;
                 MiniSatFile >> x;
-                if (x > 0) OutputFile << i << ' ';
+                if (x > 0){
+                    OutputFile << i;
+                    if (ct!=k2-1) OutputFile << " ";
+                    ct++;
+                }
             }
-            OutputFile << '\n';
         }
         else{
-            OutputFile << "0\n";
+            OutputFile << "0";
         }
         MiniSatFile.close();
         OutputFile.close();
@@ -224,7 +244,9 @@ int main(int argc, char* argv[]){
         string input_file_address = argv[2];
         string output_file_address = argv[3];
         int n = stoi(argv[4]);
-        format_changer_p1(n, input_file_address, output_file_address);
+        int k1 = stoi(argv[5]);
+        int k2 = stoi(argv[6]);
+        format_changer_p1(n, k1, k2, input_file_address, output_file_address);
     }
     else if (mode == 2){        // run3.sh
         string input_file_address = argv[2];
