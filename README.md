@@ -14,6 +14,9 @@ Reference : [Wikipedia](https://en.wikipedia.org/wiki/Clique_problem)
   - Here we used the same routine as above and binary search on the size of the clique.
 
 ## How to Run:
+1) Save testcase as data/input<num>.graphs
+2) For part1: make part1 num = <num>
+3) For part2: make part2 num = <num>
 
 ## Improvements:
 1) Degree heuristic for pruning of clauses.

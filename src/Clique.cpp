@@ -115,11 +115,11 @@ bool find_fixed_size_cliques(int n, int m, int k1, vector<vector<int> >& edges, 
 
 void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string>& clauses,const string clause_file_address,const string minsat_file_name,const string output_file_address){
     // Binary search on k
-    int low =0,high=n;
+    int low =0, high=n;
     string assignment;
-    bool satisfiable=false;
+    bool satisfiable = false;
     while (low < high){
-        vector<string> newClause (clauses.begin(),clauses.end());
+        vector<string> newClause (clauses.begin(), clauses.end());
         int k = ((low+high)/2);
         satisfiable = find_fixed_size_cliques(n,m,k,edges,newClause,clause_file_address,minsat_file_name,output_file_address);
         if (!satisfiable){
@@ -179,9 +179,8 @@ void maximal_clique(const string input_file_address,const string output_file_add
     */
 
     vector<string> clauses;
-    generate_clauses_for_not_connected_vertices(clauses, edges,false);
-    find_maximal_clique(n, m, edges, clauses,clause_file_address,minsat_output_file_address,output_file_address);
-
+    generate_clauses_for_not_connected_vertices(clauses, edges, false);
+    find_maximal_clique(n, m, edges, clauses, clause_file_address, minsat_output_file_address, output_file_address);
 }
 
 void format_changer_p1(int n,const string input_file_address,const string output_file_address){  // Changes format of output for part1
@@ -232,7 +231,7 @@ int main(int argc, char* argv[]){
         string output_file_address = argv[3];
         string clause_file_address = "temp/clause.txt";
         string minsat_output_file_address = "temp/minsat_output.txt";
-        maximal_clique(input_file_address,output_file_address,clause_file_address,minsat_output_file_address);
+        maximal_clique(input_file_address, output_file_address, clause_file_address, minsat_output_file_address);
     }
     else cout << "Invalid Mode";
 }
