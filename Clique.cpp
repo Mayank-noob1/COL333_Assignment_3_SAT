@@ -95,7 +95,7 @@ void find_maximal_clique(int n,int m, vector<vector<int> > &edges, vector<string
 
 void disjoint_clique(string input_file_address, string clause_file_address){    // Main function for part1
     ifstream InputFile(input_file_address);
-    int n, m, k1 = 0, k2 = 0;
+    int n, m, k1, k2;
     InputFile >> n >> m >> k1 >> k2;
 
     // Input Graph Edges
@@ -117,6 +117,28 @@ void disjoint_clique(string input_file_address, string clause_file_address){    
     ClauseFile << "p cnf " << (2*n + (n+1)*(k1+1) + (n+1)*(k2+1)) << ' ' << clauses.size() << '\n';
     for (auto &clause: clauses) ClauseFile << clause << '\n';
     ClauseFile.close();
+}
+
+void maximal_clique(string input_file_address, string output_file_address, string clause_file_address, string minsat_output_file_address){  // Main function for part2
+    ifstream InputFile(input_file_address);
+    int n, m;
+    InputFile >> n >> m;
+
+    // Input Graph Edges
+    vector<vector<int> > edges (n+1,vector<int> (0));
+    for(int i=0; i<m; i++){
+        int x, y;
+        InputFile >> x >> y;
+        edges[x].push_back(y);
+        edges[y].push_back(x);
+    }
+    InputFile.close();
+
+    /*
+    For every minsat, insert clauses in clause_file_address
+    Run minsat and get the values in minsat_output_file_address
+    Change the format of minsat_output_file_address and store it in output_file_address
+    */
 }
 
 void format_changer_p1(int n, string input_file_address, string output_file_address){  // Changes format of output for part1
@@ -163,7 +185,10 @@ int main(int argc, char* argv[]){
         format_changer_p1(n, input_file_address, output_file_address);
     }
     else if (mode == 2){
-        ;
+        string input_file_address = argv[2];
+        string output_file_address = argv[3];
+        string clause_file_address = "temp/clause.txt";
+        string minsat_output_file_address = "temp/minsat_output.txt";
     }
     else cout << "Invalid Mode";
 }
