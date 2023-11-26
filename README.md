@@ -15,8 +15,8 @@ Reference : [Wikipedia](https://en.wikipedia.org/wiki/Clique_problem)
 
 ## How to Run:
 1) Save testcase as data/input<num>.graphs
-2) For part1: make part1 num = <num>
-3) For part2: make part2 num = <num>
+2) For part1: make part1 num = <num_1>
+3) For part2: make part2 num = <num_2>
 
 ## Improvements:
 1) Degree heuristic for pruning of clauses.
